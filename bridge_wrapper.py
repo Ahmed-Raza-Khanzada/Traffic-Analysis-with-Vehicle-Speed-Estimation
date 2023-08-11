@@ -237,7 +237,7 @@ class YOLOv7_DeepSORT:
                         else:
                             count_time1 = str(count_time)+" secs"
                 
-                        zones_trace[new_id] = [object_id]
+                        
                         if zones_trace.get(new_id) is not None:
                             if object_id not in zones_trace[new_id]:
                                     zones[new_id] = [[object_id,old_clss,count_time1,entries[object_id][2],entries[object_id][-1]]]
@@ -260,7 +260,8 @@ class YOLOv7_DeepSORT:
         
             # -------------------------------- Tracker work ENDS here -----------------------------------------------------------------------
             # if verbose >= 1:
-            frame = display_zone_info(frame, zones)
+            print(zones,"********")
+            frame = display_zone_info(frame, zones,10,50)
             cr_fps = 1.0 / (time.time() - start_time) # calculate frames per second of running detections
             if not count_objects: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)}")
             else: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)} || Time {count_time} || Objects tracked: {count}")

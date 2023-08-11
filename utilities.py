@@ -86,9 +86,9 @@ def count_time_in_video_frame(ret,cap, prev_timestamp):
 
 def display_zone_info(video_frame, zone_data, x=20, y=50):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 0.5
-    font_color = (255, 255, 255)
-    font_thickness = 1
+    font_scale = 1
+    font_color = (0,0,0)
+    font_thickness = 2
     line_spacing = 10
 
     for zone_name, vehicle_list in zone_data.items():
