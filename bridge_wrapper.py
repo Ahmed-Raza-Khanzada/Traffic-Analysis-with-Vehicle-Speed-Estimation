@@ -224,13 +224,13 @@ class YOLOv7_DeepSORT:
                     if not still_area:
                         new_id  = entries[object_id][2]
                         old_clss = class_name
-                        if len(zones)>0:
-                            l = list(zones.values())
-                            idss = list(list(zip(*l))[0])
-                            clsnames = list(list(zip(*l))[1])
-                            if object_id in idss: 
-                                idx = idss.index(object_id)
-                                old_clss = clsnames[idx] 
+                        # if len(zones)>0:
+                        #     l = list(zones.values())
+                        #     idss = list(list(zip(*l))[0])
+                        #     clsnames = list(list(zip(*l))[1])
+                        #     if object_id in idss: 
+                        #         idx = idss.index(object_id)
+                        #         old_clss = clsnames[idx] 
                         if count_time>60:
                             count_time1 = round(count_time/60,2)
                             count_time1 = str(count_time1)+" mins"
@@ -238,12 +238,15 @@ class YOLOv7_DeepSORT:
                             count_time1 = str(count_time)+" secs"
                 
                         
+                       
                         if zones_trace.get(new_id) is not None:
                             if object_id not in zones_trace[new_id]:
-                                    zones[new_id] = [[object_id,old_clss,count_time1,entries[object_id][2],entries[object_id][-1]]]
                                     zones_trace[new_id].append(object_id)
+                                    zones[new_id].append([object_id,old_clss,count_time1,entries[object_id][2],entries[object_id][-1]])
                         else:
-                            zones_trace[new_id] = [[object_id]]
+                            zones_trace[new_id] = [object_id]
+                            zones[new_id] = [[object_id,old_clss,count_time1,entries[object_id][2],entries[object_id][-1]]]
+
 
                         
                 else:
@@ -261,7 +264,7 @@ class YOLOv7_DeepSORT:
             # -------------------------------- Tracker work ENDS here -----------------------------------------------------------------------
             # if verbose >= 1:
             print(zones,"********")
-            frame = display_zone_info(frame, zones,10,50)
+            frame = display_zone_info(frame, zones,10,140)
             cr_fps = 1.0 / (time.time() - start_time) # calculate frames per second of running detections
             if not count_objects: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)}")
             else: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)} || Time {count_time} || Objects tracked: {count}")

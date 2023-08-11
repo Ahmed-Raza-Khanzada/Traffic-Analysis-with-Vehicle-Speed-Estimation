@@ -86,10 +86,10 @@ def count_time_in_video_frame(ret,cap, prev_timestamp):
 
 def display_zone_info(video_frame, zone_data, x=20, y=50):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
+    font_scale = 0.5
     font_color = (0,0,0)
-    font_thickness = 2
-    line_spacing = 10
+    font_thickness = 1
+    line_spacing = 30
 
     for zone_name, vehicle_list in zone_data.items():
         # Extract object class and speed information
@@ -101,8 +101,8 @@ def display_zone_info(video_frame, zone_data, x=20, y=50):
         avg_speed = sum(speeds) / total_objects if total_objects > 0 else 0
 
         # Prepare text to display
-        text = f"{zone_name}\nobject_class: {total_objects}\naverage speed: {avg_speed:.2f}"
-
+        text = f"{zone_name.capitalize()}"
+        text2 = f"Average Speed: {round(avg_speed,2)} km/h"
         # Add text to the video frame
         text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
         cv2.putText(
@@ -110,13 +110,40 @@ def display_zone_info(video_frame, zone_data, x=20, y=50):
             text,
             (x, y),
             font,
+            font_scale+0.1,
+            font_color,
+            font_thickness,
+            lineType=cv2.LINE_AA,
+        )
+        cv2.putText(
+            video_frame,
+            text2,
+            (x, y+15),
+            font,
             font_scale,
             font_color,
             font_thickness,
             lineType=cv2.LINE_AA,
         )
-
+        unique_classes = set(object_classes)
+        for i, object_class in enumerate(unique_classes):
+            object_count = object_classes.count(object_class)
+            text = f"{object_class}: {object_count}"
+            if i==0:
+                 y += 35
+            else:
+                  y += 15*i
+            cv2.putText(
+                video_frame,
+                text,
+                (x, y),
+                font,
+                font_scale,
+                font_color,
+                font_thickness,
+                lineType=cv2.LINE_AA,
+            )
         # Increment y for the next zone's information
-        y += text_size[1] + line_spacing
+        y +=  line_spacing
 
     return video_frame
