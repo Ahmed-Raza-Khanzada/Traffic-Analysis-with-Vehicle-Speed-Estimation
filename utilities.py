@@ -70,3 +70,53 @@ def create_coor_file(coor,path="./coors/coor.txt"):
 	for element in coor:
 		textfile.write(str(element) + "\n")
 	textfile.close()
+        
+def count_time_in_video_frame(ret,cap, prev_timestamp):
+ 
+
+  
+    current_timestamp = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0
+
+    if prev_timestamp is not None:
+        time_interval = current_timestamp - prev_timestamp
+        print(f"Timestamp = {current_timestamp:.2f}s, Time Interval = {time_interval:.2f}s")
+
+    return current_timestamp
+
+
+def display_zone_info(video_frame, zone_data, x=20, y=50):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    font_color = (255, 255, 255)
+    font_thickness = 1
+    line_spacing = 10
+
+    for zone_name, vehicle_list in zone_data.items():
+        # Extract object class and speed information
+        object_classes = [item[1] for item in vehicle_list]
+        speeds = [item[4] for item in vehicle_list]
+
+        # Calculate total object count and average speed
+        total_objects = len(object_classes)
+        avg_speed = sum(speeds) / total_objects if total_objects > 0 else 0
+
+        # Prepare text to display
+        text = f"{zone_name}\nobject_class: {total_objects}\naverage speed: {avg_speed:.2f}"
+
+        # Add text to the video frame
+        text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+        cv2.putText(
+            video_frame,
+            text,
+            (x, y),
+            font,
+            font_scale,
+            font_color,
+            font_thickness,
+            lineType=cv2.LINE_AA,
+        )
+
+        # Increment y for the next zone's information
+        y += text_size[1] + line_spacing
+
+    return video_frame

@@ -25,7 +25,7 @@ from deep_sort.tracker import Tracker
 # import from helpers
 from tracking_helpers import read_class_names, create_box_encoder
 from detection_helpers import *
-from utilities import make_poly , get_coordinates,estimateSpeed,fancy_bbox
+from utilities import make_poly , get_coordinates,estimateSpeed,fancy_bbox,count_time_in_video_frame,display_zone_info
 from collections import Counter
 import os
 import tensorflow as tf
@@ -104,14 +104,17 @@ class YOLOv7_DeepSORT:
 
         entries = {}
         zones = {}
+        zones_trace = {}
         total_objects = {}
         current_frame = 0
         count_time = 0
+        prev_timestamp = None
         while True: # while video is running
             return_value, frame = vid.read()
             if not return_value:
                 print('Video has ended or failed!')
                 break
+            prev_timestamp = count_time_in_video_frame(return_value,vid, prev_timestamp)
             frame_num +=1
 
             if skip_frames and not frame_num % skip_frames: continue # skip every nth frame. When every frame is not important, you can use this to fasten the process
@@ -214,28 +217,35 @@ class YOLOv7_DeepSORT:
                     still_area = False
                     for area_no,area in enumerate(areas):
                         result = cv2.pointPolygonTest(np.array(area,np.int32),(cx,cy),False)
+                       
                         if result>=0:
                             still_area = True
                             break
                     if not still_area:
-                        new_id  = str(object_id)+"_"+entries[object_id][2]
-                        if new_id not in zones.keys():
-                            old_clss = class_name
-                            if len(zones)>0:
-                                l = list(zones.values())
-                                idss = list(list(zip(*l))[0])
-                                clsnames = list(list(zip(*l))[1])
-                                if object_id in idss: 
-                                    idx = idss.index(object_id)
-                                    old_clss = clsnames[idx] 
-                            if count_time>60:
-                                count_time1 = round(count_time/60,2)
-                                count_time1 = str(count_time1)+" mins"
-                            else:
-                                count_time1 = str(count_time)+" secs"
-                            zones[new_id] = [object_id,old_clss,count_time1,entries[object_id][2]]
-                            
-                              
+                        new_id  = entries[object_id][2]
+                        old_clss = class_name
+                        if len(zones)>0:
+                            l = list(zones.values())
+                            idss = list(list(zip(*l))[0])
+                            clsnames = list(list(zip(*l))[1])
+                            if object_id in idss: 
+                                idx = idss.index(object_id)
+                                old_clss = clsnames[idx] 
+                        if count_time>60:
+                            count_time1 = round(count_time/60,2)
+                            count_time1 = str(count_time1)+" mins"
+                        else:
+                            count_time1 = str(count_time)+" secs"
+                
+                        zones_trace[new_id] = [object_id]
+                        if zones_trace.get(new_id) is not None:
+                            if object_id not in zones_trace[new_id]:
+                                    zones[new_id] = [[object_id,old_clss,count_time1,entries[object_id][2],entries[object_id][-1]]]
+                                    zones_trace[new_id].append(object_id)
+                        else:
+                            zones_trace[new_id] = [[object_id]]
+
+                        
                 else:
                     speed2 = "Not in zone"
                
@@ -247,8 +257,10 @@ class YOLOv7_DeepSORT:
             if current_frame==int(initial_fps):
                 current_frame =0
                 count_time += 1
+        
             # -------------------------------- Tracker work ENDS here -----------------------------------------------------------------------
             # if verbose >= 1:
+            frame = display_zone_info(frame, zones)
             cr_fps = 1.0 / (time.time() - start_time) # calculate frames per second of running detections
             if not count_objects: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)}")
             else: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)} || Time {count_time} || Objects tracked: {count}")
