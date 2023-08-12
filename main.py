@@ -2,8 +2,11 @@ from detection_helpers import *
 from tracking_helpers import *
 import argparse
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 20b512d9dfc3886a917bda147a3e376063bda927
 from  bridge_wrapper import *
 from PIL import Image
 os.environ['CUDA_VISIBLE_DEVICES'] ="0" # comment out below line to enable tensorflow logging outputs
