@@ -132,11 +132,7 @@ def display_zone_info(video_frame, zone_data, x=20, y=50):
             if i==0:
                  y += 35
             else:
-<<<<<<< HEAD
-                  y += 17*i
-=======
-                  y += 15*i
->>>>>>> 20b512d9dfc3886a917bda147a3e376063bda927
+                  y += 20*i
             cv2.putText(
                 video_frame,
                 text,

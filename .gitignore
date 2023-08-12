@@ -2,16 +2,8 @@
 traced_model.pt
 ./weights/yolov7x.pt
 /weights/yolov7x.pt
-<<<<<<< HEAD
 IO_data/output/sample_8_out.mp4
 IO_data/output/sample_8_out_1.mp4
-=======
-./IO_data/input/video/sample_3.mp4
-./IO_data/input/video/sample_4.mp4
-./IO_data/input/video/sample_8.mp4
-./IO_data/input/video/street.mp4
-./IO_data/output/sample_8_out.mp4
->>>>>>> 20b512d9dfc3886a917bda147a3e376063bda927
 yolov7.pt
 yolov7x.pt
 yolov7-tiny.pt
