@@ -1,0 +1,10 @@
+./traced_model.pt
+traced_model.pt
+./weights/yolov7x.pt
+/weights/yolov7x.pt
+IO_data/output/sample_8_out.mp4
+IO_data/output/sample_8_out_1.mp4
+yolov7.pt
+yolov7x.pt
+yolov7-tiny.pt
+
