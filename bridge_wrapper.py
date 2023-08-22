@@ -264,25 +264,12 @@ class YOLOv7_DeepSORT:
             # -------------------------------- Tracker work ENDS here -----------------------------------------------------------------------
             # if verbose >= 1:
             print(zones,"********")
-            frame = display_zone_info(frame, zones,10,140)
+            frame = display_zone_info(frame, zones,total_objects,10,30)#10,140
             cr_fps = 1.0 / (time.time() - start_time) # calculate frames per second of running detections
             if not count_objects: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)}")
             else: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)} || Time {count_time} || Objects tracked: {count}")
             cv2.putText(frame, "FPS: "+str(round(cr_fps,2)), (10,35), cv2.FONT_HERSHEY_PLAIN, 1.3, (0,0,0), 2)
-            all_class_names = list(total_objects.values())
-            if len(all_class_names)>0:
-               
-                counter_objects = Counter(all_class_names)
-                
-                y_axis = 35
-                for pos,(k,v) in enumerate(counter_objects.items()):
-                    if pos==0:
-                        y_axis = y_axis+((pos+1)*25)
-                    else:
-                        y_axis = y_axis+((pos+1)*12)
-                        
-                    cv2.putText(frame, f"Total {str(k).capitalize()}s : {str(v)}", (10,y_axis), cv2.FONT_HERSHEY_PLAIN, 1.2, (0,0,0), 2)
-            
+           
             result = np.asarray(frame)
             result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
@@ -290,7 +277,7 @@ class YOLOv7_DeepSORT:
             if output: out.write(result) # save output video
 
             if show_live:
-                cv2.imshow("Output Video", result)
+                cv2.imshow("Output Video", cv2.resize(result,(1350,750) )  )
                 if cv2.waitKey(1) & 0xFF == ord('q'): 
                     print(zones)
                     break

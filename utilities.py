@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import math
+from collections import Counter
+
 
 all_locations = []
 def change_tuple(element):
@@ -84,12 +86,45 @@ def count_time_in_video_frame(ret,cap, prev_timestamp):
     return current_timestamp
 
 
-def display_zone_info(video_frame, zone_data, x=20, y=50):
+def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
-    font_color = (0,0,0)
+    font_color = (0, 0, 0)
     font_thickness = 1
     line_spacing = 30
+    transparent_box_alpha = 0.5  # Adjust transparency here
+
+    all_class_names = list(total_objects.values())
+    if len(all_class_names)>0:
+        
+        counter_objects = Counter(all_class_names)
+        
+        fix_width_box = f"Total    Personss: 1000 "
+        for pos,(k,v) in enumerate(counter_objects.items()):
+            if pos==0:
+                y = y+25
+            else:
+                y = y+20
+            
+            
+            overall_text = f"Total {str(k).capitalize()}s: {str(v)}"
+
+            # Calculate box dimensions
+            text_size = cv2.getTextSize(overall_text, font, font_scale, font_thickness)[0]
+            box_width = max(text_size[0], cv2.getTextSize(fix_width_box, font, font_scale, font_thickness)[0][0]) 
+            # Calculate the total height required for text within the box
+            box_height = text_size[1] + 15 + (len(set(all_class_names)) + 1) 
+
+            # Draw the transparent box
+            box_coords = [(x, y), (x + box_width, y), (x + box_width, y + box_height), (x, y + box_height)]
+            overlay = video_frame.copy()
+            cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], (200, 200, 200))
+            cv2.addWeighted(overlay, transparent_box_alpha, video_frame, 1 - transparent_box_alpha, 0, video_frame)
+           
+            cv2.putText(video_frame, overall_text, (x+5,y+text_size[1]), cv2.FONT_HERSHEY_PLAIN, 1.2, (0,0,0), 2)
+
+        y += box_height+line_spacing
+
 
     for zone_name, vehicle_list in zone_data.items():
         # Extract object class and speed information
@@ -102,52 +137,62 @@ def display_zone_info(video_frame, zone_data, x=20, y=50):
 
         # Prepare text to display
         text = f"{zone_name.capitalize()}"
-        text2 = f"Average Speed: {round(avg_speed,2)} km/h"
-        # Add text to the video frame
+        text2 = f"Average Speed: {round(avg_speed, 2)} km/h"
+        
+        # Get the size of the text
         text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+
+        # Calculate box dimensions
+        box_width = max(text_size[0], cv2.getTextSize(text2, font, font_scale, font_thickness)[0][0]) + 10
+
+        # Calculate the total height required for text within the box
+        box_height = text_size[1] + 17 + (len(set(object_classes)) + 1) * 19
+
+        # Draw the transparent box
+        box_coords = [(x, y-5), (x + box_width, y-5), (x + box_width, y + box_height), (x, y + box_height)]
+        overlay = video_frame.copy()
+        cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], (200, 200, 200))
+        cv2.addWeighted(overlay, transparent_box_alpha, video_frame, 1 - transparent_box_alpha, 0, video_frame)
+
+        # Add text on top of the transparent box
         cv2.putText(
             video_frame,
             text,
-            (x, y),
+            (x + 5, y + text_size[1]),
             font,
-            font_scale+0.1,
+            font_scale + 0.1,
             font_color,
-            font_thickness,
+            font_thickness + 1,  # Increase font thickness for bold effect
             lineType=cv2.LINE_AA,
         )
         cv2.putText(
             video_frame,
             text2,
-            (x, y+15),
+            (x + 5, y + text_size[1] + 20),
             font,
             font_scale,
             font_color,
             font_thickness,
             lineType=cv2.LINE_AA,
         )
+
         unique_classes = set(object_classes)
         for i, object_class in enumerate(unique_classes):
             object_count = object_classes.count(object_class)
             text = f"{object_class}: {object_count}"
-            if i==0:
-                 y += 35
-            else:
-                  y += 19*i
+            y += 19
             cv2.putText(
                 video_frame,
                 text,
-                (x, y),
+                (x + 5, y + text_size[1] + 20),
                 font,
                 font_scale,
                 font_color,
                 font_thickness,
                 lineType=cv2.LINE_AA,
             )
+        
         # Increment y for the next zone's information
-        y +=  line_spacing
+        y += box_height + line_spacing-10
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 20b512d9dfc3886a917bda147a3e376063bda927
     return video_frame
