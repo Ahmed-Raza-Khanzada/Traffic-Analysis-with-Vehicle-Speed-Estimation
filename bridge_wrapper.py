@@ -5,7 +5,7 @@ A Moduele which binds Yolov7 repo with Deepsort with modifications
 import os
 import time
 import tensorflow as tf
-
+from keras.models import load_model
 os.environ['CUDA_VISIBLE_DEVICES'] ="0" # comment out below line to enable tensorflow logging outputs
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 if len(physical_devices) > 0:
@@ -14,7 +14,7 @@ if len(physical_devices) > 0:
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
+from class_predict import predict_class_mymodel
 from tensorflow.compat.v1 import ConfigProto # DeepSORT official implementation uses tf1.x so we have to do some modifications to avoid errors
 
 # deep sort imports
@@ -25,8 +25,7 @@ from deep_sort.tracker import Tracker
 # import from helpers
 from tracking_helpers import read_class_names, create_box_encoder
 from detection_helpers import *
-from utilities import make_poly , get_coordinates,estimateSpeed,fancy_bbox,count_time_in_video_frame,display_zone_info
-from collections import Counter
+from utilities import make_poly , get_coordinates,estimateSpeed,fancy_bbox,count_time_in_video_frame,display_zone_info,replace_zone_name
 import os
 import tensorflow as tf
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
@@ -43,7 +42,7 @@ class YOLOv7_DeepSORT:
     '''
     Class to Wrap ANY detector  of YOLO type with DeepSORT
     '''
-    def __init__(self, reID_model_path:str, detector, max_cosine_distance:float=0.6, nn_budget:float=None, nms_max_overlap:float=1.0,
+    def __init__(self, reID_model_path:str, detector, max_cosine_distance:float=0.6, nn_budget:float=None, nms_max_overlap:float=0.7,
     coco_names_path:str ="./io_data/input/classes/coco.names",  ):
         '''
         args: 
@@ -109,6 +108,10 @@ class YOLOv7_DeepSORT:
         current_frame = 0
         count_time = 0
         prev_timestamp = None
+        # Load the model
+        my_class_model = load_model("classification_model/keras_Model.h5", compile=False)
+        # Load the labels
+        my_class_model_names = open("classification_model/labels.txt", "r").readlines()
         while True: # while video is running
             return_value, frame = vid.read()
             if not return_value:
@@ -123,6 +126,7 @@ class YOLOv7_DeepSORT:
             # -----------------------------------------PUT ANY DETECTION MODEL HERE -----------------------------------------------------------------
             yolo_dets = self.detector.detect(frame.copy(), plot_bb = False)  # Get the detections
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_1 = frame.copy()
 
             if yolo_dets is None:
                 bboxes = []
@@ -172,8 +176,8 @@ class YOLOv7_DeepSORT:
                 if not track.is_confirmed() or track.time_since_update > 1:
                     continue 
                 bbox = track.to_tlbr()
-                class_name = track.get_class()
                 x,y,x2,y2 = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
+                class_name = predict_class_mymodel(frame_1[y:y2,x:x2],my_class_model_names,my_class_model)#track.get_class()
                 cx,cy = int((x + x2)/2),int((y+y2)/2)
                 object_id = track.track_id
                 if object_id not in total_objects.keys():
@@ -268,11 +272,11 @@ class YOLOv7_DeepSORT:
             cr_fps = 1.0 / (time.time() - start_time) # calculate frames per second of running detections
             if not count_objects: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)}")
             else: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)} || Time {count_time} || Objects tracked: {count}")
-            cv2.putText(frame, "FPS: "+str(round(cr_fps,2)), (10,35), cv2.FONT_HERSHEY_PLAIN, 1.3, (0,0,0), 2)
+            cv2.putText(frame, "FPS: "+str(round(cr_fps,2)), (600,30), cv2.FONT_HERSHEY_PLAIN, 1.3, (0,0,0), 2)
            
             result = np.asarray(frame)
             result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
+            
             result = make_poly(result,areas)
             if output: out.write(result) # save output video
 

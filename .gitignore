@@ -4,7 +4,16 @@ traced_model.pt
 /weights/yolov7x.pt
 IO_data/output/sample_8_out.mp4
 IO_data/output/sample_8_out_1.mp4
+IO_data/output/sample_6_out_1.mp4 
+IO_data/output/sample_6_out_2.mp4 
+IO_data/output/sample_6_out_3.mp4 
 yolov7.pt
 yolov7x.pt
 yolov7-tiny.pt
-
+output_images_classification
+classification_model
+yolov7-d6.pt.fdmdownload
+yolov7-e6.pt.fdmdownload
+yolov7-e6e.pt.fdmdownload
+yolov7-w6.pt
+yolov8n.pt

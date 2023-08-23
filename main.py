@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	parser.add_argument('--show', type=bool, default=False, help='Show video')
 
 	opt = parser.parse_args()
-	detector = Detector(classes = [0,1,2,3,5,7]) # it'll detect ONLY [person,horses,sports ball]. class = None means detect all classes. List info at: "data/coco.yaml"
+	detector = Detector(classes = [1,2,3,5,7]) # it'll detect ONLY [person,horses,sports ball]. class = None means detect all classes. List info at: "data/coco.yaml"
 	detector.load_model(opt.weights) # pass the path to the trained weight file
 	# Initialise  class that binds detector and tracker in one class
 	tracker = YOLOv7_DeepSORT(reID_model_path=opt.tracker, detector=detector)

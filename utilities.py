@@ -54,19 +54,28 @@ def fancy_bbox(img,bbox,l=13,t=2):
     cv2.line(img,(x1,y1),(x1-l,y1),color,t)
     cv2.line(img,(x1,y1),(x1,y1-l),color,t)    
     return img
+
+def get_polygon_center(polygon):
+    x_coords = [point[0] for point in polygon]
+    y_coords = [point[1] for point in polygon]
+    center_x = sum(x_coords) / len(polygon)
+    center_y = sum(y_coords) / len(polygon)
+    return center_x, center_y
 def make_poly(img,spot):
 	
-	overlay = img.copy()
-	
-	alpha = 0.6
-	output = img.copy()
-	
-	for i in range(len(spot)):
-		output = cv2.fillPoly(img,[np.array(spot[i],np.int32)],(150,20,220))
-	cv2.addWeighted(overlay, alpha, output, 1 - alpha,
-			0, output)
- 
-	return output
+    overlay = img.copy()
+
+    alpha = 0.6
+    output = img.copy()
+
+    for i in range(len(spot)):
+        output = cv2.fillPoly(img,[np.array(spot[i],np.int32)],(150,20,220))
+        center_x, center_y = get_polygon_center(spot[i])
+        cv2.putText(output, f"Zone {i+1}", (int(center_x), int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+    cv2.addWeighted(overlay, alpha, output, 1 - alpha,
+            0, output)
+
+    return output
 def create_coor_file(coor,path="./coors/coor.txt"):
 	textfile = open(path, "w")
 	for element in coor:
@@ -84,7 +93,9 @@ def count_time_in_video_frame(ret,cap, prev_timestamp):
         print(f"Timestamp = {current_timestamp:.2f}s, Time Interval = {time_interval:.2f}s")
 
     return current_timestamp
-
+def replace_zone_name(zname):
+    t = "Zone "
+    return t+str(int(zname[-1])+1) 
 
 def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -93,7 +104,7 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
     font_thickness = 1
     line_spacing = 30
     transparent_box_alpha = 0.5  # Adjust transparency here
-
+    old_y = y
     all_class_names = list(total_objects.values())
     if len(all_class_names)>0:
         
@@ -116,7 +127,7 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
             box_height = text_size[1] + 15 + (len(set(all_class_names)) + 1) 
 
             # Draw the transparent box
-            box_coords = [(x, y), (x + box_width, y), (x + box_width, y + box_height), (x, y + box_height)]
+            box_coords = [(x, y-5), (x + box_width, y-5), (x + box_width, y + box_height), (x, y + box_height)]
             overlay = video_frame.copy()
             cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], (200, 200, 200))
             cv2.addWeighted(overlay, transparent_box_alpha, video_frame, 1 - transparent_box_alpha, 0, video_frame)
@@ -125,7 +136,8 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
 
         y += box_height+line_spacing
 
-
+    x=1030
+    y=old_y
     for zone_name, vehicle_list in zone_data.items():
         # Extract object class and speed information
         object_classes = [item[1] for item in vehicle_list]
@@ -136,7 +148,7 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
         avg_speed = sum(speeds) / total_objects if total_objects > 0 else 0
 
         # Prepare text to display
-        text = f"{zone_name.capitalize()}"
+        text = f"{replace_zone_name(zone_name).capitalize()}"
         text2 = f"Average Speed: {round(avg_speed, 2)} km/h"
         
         # Get the size of the text
@@ -193,6 +205,6 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
             )
         
         # Increment y for the next zone's information
-        y += box_height + line_spacing-10
+        y += box_height + line_spacing-20
 
     return video_frame
