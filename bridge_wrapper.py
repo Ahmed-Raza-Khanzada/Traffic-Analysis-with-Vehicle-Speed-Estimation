@@ -3,6 +3,8 @@ A Moduele which binds Yolov7 repo with Deepsort with modifications
 '''
 
 import os
+import random as rnd
+import string
 import time
 import tensorflow as tf
 from keras.models import load_model
@@ -42,7 +44,7 @@ class YOLOv7_DeepSORT:
     '''
     Class to Wrap ANY detector  of YOLO type with DeepSORT
     '''
-    def __init__(self, reID_model_path:str, detector, max_cosine_distance:float=0.6, nn_budget:float=None, nms_max_overlap:float=0.7,
+    def __init__(self, reID_model_path:str, detector, max_cosine_distance:float=0.8, nn_budget:float=None, nms_max_overlap:float=0.8,
     coco_names_path:str ="./io_data/input/classes/coco.names",  ):
         '''
         args: 
@@ -177,11 +179,10 @@ class YOLOv7_DeepSORT:
                     continue 
                 bbox = track.to_tlbr()
                 x,y,x2,y2 = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
-                class_name = predict_class_mymodel(frame_1[y:y2,x:x2],my_class_model_names,my_class_model)#track.get_class()
+                class_name = track.get_class()#predict_class_mymodel(frame_1[y:y2,x:x2],my_class_model_names,my_class_model)#
                 cx,cy = int((x + x2)/2),int((y+y2)/2)
                 object_id = track.track_id
-                if object_id not in total_objects.keys():
-                    total_objects[object_id] = class_name
+                
                 for area_no,area in enumerate(areas):
                     result = cv2.pointPolygonTest(np.array(area,np.int32),(cx,cy),False)
                     speed = False
@@ -204,6 +205,17 @@ class YOLOv7_DeepSORT:
                                 print("Speed Detected",speed)
                                 # if speed<6:
                                 #     speed = 0
+                                if object_id not in total_objects.keys():
+                                    total_objects[object_id] = class_name
+                                #delete this code
+                                try:
+                                    random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
+                                    while random_id  in os.listdir('H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data'):
+                                        random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
+                                    cv2.imwrite( f'H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data/{random_id}.jpg',frame_1[y:y2,x:x2])
+                                except:
+                                    pass
+                               
                                 old_values  = entries[object_id][1:]
                                 entries[object_id] = ((cx,cy),old_values[0],old_values[1],speed)
                                 # if speed<7:
@@ -213,6 +225,7 @@ class YOLOv7_DeepSORT:
                                     #rectangle wali lines and putext is inside the zones
                         break
                 color = (245, 105, 12)
+                
                 if object_id in entries.keys():
                     speed2 = entries[object_id][-1]
                     speed2 = round(speed2,2)

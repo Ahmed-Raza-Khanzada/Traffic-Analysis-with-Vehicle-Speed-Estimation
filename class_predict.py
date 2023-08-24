@@ -22,7 +22,7 @@ def predict_class_mymodel(image,class_names, model):
     random_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=id_length))
     while random_id  in os.listdir('H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data'):
        random_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=id_length))
-    cv2.imwrite( f'H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data/{random_id}.jpg',image)
+    # cv2.imwrite( f'H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data/{random_id}.jpg',image)
 
     # Resize the raw image into (224-height,224-width) pixels
     image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
