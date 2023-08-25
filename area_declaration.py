@@ -56,3 +56,5 @@ if __name__=="__main__":
 			create_coor_file(coor=coors,path=opt.coor)
 			break
 
+#"./IO_data/input/video/sample_6.mp4"
+#"./coors/coor6.txt"

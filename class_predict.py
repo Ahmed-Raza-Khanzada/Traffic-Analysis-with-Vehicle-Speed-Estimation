@@ -40,6 +40,10 @@ def predict_class_mymodel(image,class_names, model):
     index = np.argmax(prediction)
     class_name = class_names[index]
     confidence_score = prediction[0][index]
+    print("Class:", class_name[2:],f"Conf {confidence_score}", end="")
+    if class_name[2:-1]=="other" and confidence_score<0.9:
+        return "Bus"   
+
     # Print prediction and confidence score
     # print("Class:", class_name[2:], end="")
     return class_name[2:-1]

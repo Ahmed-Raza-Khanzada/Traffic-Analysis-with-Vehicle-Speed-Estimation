@@ -44,8 +44,8 @@ class YOLOv7_DeepSORT:
     '''
     Class to Wrap ANY detector  of YOLO type with DeepSORT
     '''
-    def __init__(self, reID_model_path:str, detector, max_cosine_distance:float=0.8, nn_budget:float=None, nms_max_overlap:float=0.8,
-    coco_names_path:str ="./io_data/input/classes/coco.names",  ):
+    def __init__(self, reID_model_path:str, detector, max_cosine_distance:float=0.8, nn_budget:float=None, nms_max_overlap:float=0.92,
+    coco_names_path:str ="./io_data/input/classes/coco.names",  ):#nms_max_overlap:float=0.92
         '''
         args: 
             reID_model_path: Path of the model which uses generates the embeddings for the cropped area for Re identification
@@ -179,7 +179,10 @@ class YOLOv7_DeepSORT:
                     continue 
                 bbox = track.to_tlbr()
                 x,y,x2,y2 = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
-                class_name = track.get_class()#predict_class_mymodel(frame_1[y:y2,x:x2],my_class_model_names,my_class_model)#
+                try:
+                    class_name = track.get_class()#predict_class_mymodel(frame_1[y:y2,x:x2],my_class_model_names,my_class_model)#
+                except:
+                    continue
                 cx,cy = int((x + x2)/2),int((y+y2)/2)
                 object_id = track.track_id
                 
@@ -195,34 +198,33 @@ class YOLOv7_DeepSORT:
                         if object_id not in entries.keys() :
                             print(frame_num,"Frame no")
                             speed = 0
+                    
+                           
                             entries[object_id] = ((cx,cy),class_name,area_names[area_no],speed)
                         
                         if frame_num>2:
                                 
                             if object_id in entries.keys():
-                                print("Object Id Exist")
+                                # print("Object Id Exist")
                                 speed = estimateSpeed(initial_fps,entries[object_id][0],(cx,cy))
-                                print("Speed Detected",speed)
+
+                                # if area_no==1:
+                                #     print("*"*25,object_id,"Speed Detected",speed)
                                 # if speed<6:
                                 #     speed = 0
-                                if object_id not in total_objects.keys():
-                                    total_objects[object_id] = class_name
-                                #delete this code
-                                try:
-                                    random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
-                                    while random_id  in os.listdir('H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data'):
-                                        random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
-                                    cv2.imwrite( f'H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data/{random_id}.jpg',frame_1[y:y2,x:x2])
-                                except:
-                                    pass
+                               
+                                # try:
+                                #     random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
+                                #     while random_id  in os.listdir('H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data'):
+                                #         random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
+                                #     cv2.imwrite( f'H:/upwork/vehicle-submission/vehicle-speed-estimation-v7/output_images_classification/arrange_data/{random_id}.jpg',frame_1[y:y2,x:x2])
+                                # except:
+                                #     pass
                                
                                 old_values  = entries[object_id][1:]
-                                entries[object_id] = ((cx,cy),old_values[0],old_values[1],speed)
-                                # if speed<7:
-                                #     speed = 0
-                                # if speed>0:
-                                    #print(speed,"*********Speed*********")
-                                    #rectangle wali lines and putext is inside the zones
+                                print(object_id,class_name,"area name official",area_names[area_no],"old value expected area",old_values[1],speed,"$"*25)
+                                entries[object_id] = ((cx,cy),old_values[0],area_names[area_no],speed)
+                                
                         break
                 color = (245, 105, 12)
                 
@@ -240,14 +242,11 @@ class YOLOv7_DeepSORT:
                             break
                     if not still_area:
                         new_id  = entries[object_id][2]
+                       
                         old_clss = class_name
-                        # if len(zones)>0:
-                        #     l = list(zones.values())
-                        #     idss = list(list(zip(*l))[0])
-                        #     clsnames = list(list(zip(*l))[1])
-                        #     if object_id in idss: 
-                        #         idx = idss.index(object_id)
-                        #         old_clss = clsnames[idx] 
+                        if object_id not in total_objects.keys():
+                                total_objects[object_id] = class_name
+                   
                         if count_time>60:
                             count_time1 = round(count_time/60,2)
                             count_time1 = str(count_time1)+" mins"
@@ -255,7 +254,8 @@ class YOLOv7_DeepSORT:
                             count_time1 = str(count_time)+" secs"
                 
                         
-                       
+                        print(object_id,class_name,new_id,speed,"#"*25)
+
                         if zones_trace.get(new_id) is not None:
                             if object_id not in zones_trace[new_id]:
                                     zones_trace[new_id].append(object_id)
@@ -269,7 +269,7 @@ class YOLOv7_DeepSORT:
                 else:
                     speed2 = "Not in zone"
                
-                print("Speed2",speed2)
+                # print("Speed2",speed2)
                 cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-15)), (int(bbox[0])+(len(class_name)+len(str(object_id))+len(speed2))*13, int(bbox[1])), color, -1)
                 cv2.putText(frame, class_name.capitalize()+", "+str(int(object_id))+", "+speed2, (int(bbox[0]), int(bbox[1]-3)), cv2.FONT_HERSHEY_PLAIN, 1, (0,0,0), 2)
                 frame = fancy_bbox(frame,(x,y,x2,y2))
@@ -280,12 +280,12 @@ class YOLOv7_DeepSORT:
         
             # -------------------------------- Tracker work ENDS here -----------------------------------------------------------------------
             # if verbose >= 1:
-            print(zones,"********")
+            # print(zones,"********")
             frame = display_zone_info(frame, zones,total_objects,10,30)#10,140
             cr_fps = 1.0 / (time.time() - start_time) # calculate frames per second of running detections
             if not count_objects: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)}")
             else: print(f"Processed frame no: {frame_num} || Current FPS: {round(cr_fps,2)} || Time {count_time} || Objects tracked: {count}")
-            cv2.putText(frame, "FPS: "+str(round(cr_fps,2)), (600,30), cv2.FONT_HERSHEY_PLAIN, 1.3, (0,0,0), 2)
+            # cv2.putText(frame, "FPS: "+str(round(cr_fps,2)), (600,30), cv2.FONT_HERSHEY_PLAIN, 1.3, (0,0,0), 2)
            
             result = np.asarray(frame)
             result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
