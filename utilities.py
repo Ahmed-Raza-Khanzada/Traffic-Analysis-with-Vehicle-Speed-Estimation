@@ -31,14 +31,28 @@ def get_coordinates(path="coor.txt"):
             locations.append(coor)
         all_locations.append(locations)
     return all_locations  
-def estimateSpeed(initial_fps,location1, location2):
+
+
+def estimateSpeed(initial_fps,location1, location2,id1):
     d_pixels = math.sqrt(math.pow(location2[0] - location1[0], 2) + math.pow(location2[1] - location1[1], 2))
     # ppm = location2[2] *0.2 #/ carWidht
-    ppm = 20#20
+    # Calculate ppm based on bounding box width
+    if len(location2)>2:
+        bounding_box_area = location2[3]*location2[2]
+        if bounding_box_area > 0:
+            ppm =  bounding_box_area /15000 # Adjust the factor50 as needed
+            print(f"ID {id1}","Car area", bounding_box_area, "PPM", ppm)
+        else:
+            ppm = 17  # Default ppm value
+    else:
+        ppm = 20  # Default ppm value
     d_meters = d_pixels / ppm
     fps = initial_fps
     speed = d_meters * fps * 3.6
+    if speed>100:
+        speed = 80+((speed-100)*0.6)
     return speed
+
 def fancy_bbox(img,bbox,l=13,t=2):
     x,y,x1,y1 = bbox
     color = (245, 66, 12)
@@ -67,9 +81,9 @@ def make_poly(img,spot):
 
     alpha = 0.6
     output = img.copy()
-
+    zones_color = (242, 64, 24)#(220,20,150)#
     for i in range(len(spot)):
-        output = cv2.fillPoly(img,[np.array(spot[i],np.int32)],(150,20,220))
+        output = cv2.fillPoly(img,[np.array(spot[i],np.int32)],zones_color[::-1])
         center_x, center_y = get_polygon_center(spot[i])
         cv2.putText(output, f"Zone {i+1}", (int(center_x), int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
     cv2.addWeighted(overlay, alpha, output, 1 - alpha,
@@ -96,16 +110,40 @@ def count_time_in_video_frame(ret,cap, prev_timestamp):
 def replace_zone_name(zname):
     t = "Zone "
     return t+str(int(zname[-1])+1) 
+def write_copywright(frame):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.8
+    font_thickness = 1
+    x,y = 8,7
+    transparent_box_alpha = 0.8
+    overall_text = "Created by: Ahmed Raza Khanzada"
+    color_design = (242, 172, 82)#(200, 200, 200)
+    # Calculate box dimensions
+    text_size = cv2.getTextSize(overall_text, font, 0.4, font_thickness)[0]
+    box_width = text_size[0]+17
+    # Calculate the total height required for text within the box
+    box_height = text_size[1] + 5
 
+    # Draw the transparent box
+    box_coords = [(x, y-3), (x + box_width, y-3), (x + box_width, y + box_height), (x, y + box_height)]
+    overlay = frame.copy()
+    cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], color_design)
+    cv2.addWeighted(overlay, transparent_box_alpha, frame, 1 - transparent_box_alpha, 0, frame)
+    
+    cv2.putText(frame, overall_text, (x+5,y+text_size[1]), cv2.FONT_HERSHEY_PLAIN, font_scale, (0,0,0), 2)
+    return frame    
 def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
     font_color = (0, 0, 0)
     font_thickness = 1
+    box_line_spacing =25
     line_spacing = 30
     transparent_box_alpha = 0.5  # Adjust transparency here
     old_y = y
+    color_design = (242, 172, 82)#(200, 200, 200)
     all_class_names = list(total_objects.values())
+    video_frame = write_copywright(video_frame)
     if len(all_class_names)>0:
         
         counter_objects = Counter(all_class_names)
@@ -122,14 +160,14 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
 
             # Calculate box dimensions
             text_size = cv2.getTextSize(overall_text, font, font_scale, font_thickness)[0]
-            box_width = max(text_size[0], cv2.getTextSize(fix_width_box, font, font_scale, font_thickness)[0][0]) 
+            box_width = max(text_size[0], cv2.getTextSize(fix_width_box, font, font_scale, font_thickness)[0][0]) -5
             # Calculate the total height required for text within the box
             box_height = text_size[1] + 15 + (len(set(all_class_names)) + 1) 
 
             # Draw the transparent box
             box_coords = [(x, y-5), (x + box_width, y-5), (x + box_width, y + box_height), (x, y + box_height)]
             overlay = video_frame.copy()
-            cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], (200, 200, 200))
+            cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], color_design)
             cv2.addWeighted(overlay, transparent_box_alpha, video_frame, 1 - transparent_box_alpha, 0, video_frame)
            
             cv2.putText(video_frame, overall_text, (x+5,y+text_size[1]), cv2.FONT_HERSHEY_PLAIN, 1.2, (0,0,0), 2)
@@ -163,7 +201,7 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
         # Draw the transparent box
         box_coords = [(x, y-5), (x + box_width, y-5), (x + box_width, y + box_height), (x, y + box_height)]
         overlay = video_frame.copy()
-        cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], (200, 200, 200))
+        cv2.fillPoly(overlay, [np.array(box_coords, np.int32)], color_design)
         cv2.addWeighted(overlay, transparent_box_alpha, video_frame, 1 - transparent_box_alpha, 0, video_frame)
 
         # Add text on top of the transparent box
@@ -189,14 +227,15 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
         )
 
         unique_classes = set(object_classes)
+        each_object_y = y
         for i, object_class in enumerate(unique_classes):
             object_count = object_classes.count(object_class)
             text = f"{object_class}: {object_count}"
-            y += 19
+            each_object_y += 19
             cv2.putText(
                 video_frame,
                 text,
-                (x + 5, y + text_size[1] + 20),
+                (x + 5, each_object_y + text_size[1] + 20),
                 font,
                 font_scale,
                 font_color,
@@ -205,6 +244,6 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
             )
         
         # Increment y for the next zone's information
-        y += box_height + line_spacing-20
+        y += box_height + box_line_spacing
 
     return video_frame

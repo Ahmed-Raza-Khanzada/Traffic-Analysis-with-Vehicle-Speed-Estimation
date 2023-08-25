@@ -200,18 +200,14 @@ class YOLOv7_DeepSORT:
                             speed = 0
                     
                            
-                            entries[object_id] = ((cx,cy),class_name,area_names[area_no],speed)
+                            entries[object_id] = ((cx,cy,x2,y2),class_name,area_names[area_no],speed)
                         
                         if frame_num>2:
                                 
                             if object_id in entries.keys():
-                                # print("Object Id Exist")
-                                speed = estimateSpeed(initial_fps,entries[object_id][0],(cx,cy))
-
-                                # if area_no==1:
-                                #     print("*"*25,object_id,"Speed Detected",speed)
-                                # if speed<6:
-                                #     speed = 0
+                                
+                                speed = estimateSpeed(initial_fps,entries[object_id][0],(cx,cy,x2,y2),object_id)
+                                
                                
                                 # try:
                                 #     random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
@@ -223,7 +219,7 @@ class YOLOv7_DeepSORT:
                                
                                 old_values  = entries[object_id][1:]
                                 print(object_id,class_name,"area name official",area_names[area_no],"old value expected area",old_values[1],speed,"$"*25)
-                                entries[object_id] = ((cx,cy),old_values[0],area_names[area_no],speed)
+                                entries[object_id] = ((cx,cy,x2,y2),old_values[0],area_names[area_no],speed)
                                 
                         break
                 color = (245, 105, 12)
