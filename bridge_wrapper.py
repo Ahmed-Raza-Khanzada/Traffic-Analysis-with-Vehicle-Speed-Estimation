@@ -207,7 +207,7 @@ class YOLOv7_DeepSORT:
                             if object_id in entries.keys():
                                 
                                 speed = estimateSpeed(initial_fps,entries[object_id][0],(cx,cy,x2,y2),object_id)
-                                
+
                                
                                 # try:
                                 #     random_id = ''.join(rnd.choices(string.ascii_uppercase + string.digits, k=7))
