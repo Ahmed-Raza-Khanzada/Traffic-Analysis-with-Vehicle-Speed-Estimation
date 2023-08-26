@@ -37,22 +37,32 @@ def estimateSpeed(initial_fps,location1, location2,id1):
     d_pixels = math.sqrt(math.pow(location2[0] - location1[0], 2) + math.pow(location2[1] - location1[1], 2))
     # ppm = location2[2] *0.2 #/ carWidht
     # Calculate ppm based on bounding box width
-    if len(location2)>2:
-        bounding_box_area = location2[3]*location2[2]
-        if bounding_box_area > 0:
-            chage_in_y = abs(location2[1]>location1[1])
-            if chage_in_y:
-                ppm =  (bounding_box_area /10000)+chage_in_y # Adjust the factor50 as needed
-                # print(f"ID {id1}","Car area", bounding_box_area, "PPM", ppm)
-        else:
-            ppm = 17  # Default ppm value
+    # if len(location2)>2:
+    #     bounding_box_area = location2[3]*location2[2]
+    #     if bounding_box_area > 0:
+    #         chage_in_y = abs(location2[1]>location1[1])
+    #         if chage_in_y:
+    #             ppm =  (bounding_box_area /10000)+chage_in_y # Adjust the factor50 as needed
+    #             # print(f"ID {id1}","Car area", bounding_box_area, "PPM", ppm)
+    #         else:
+    #             ppm =  (bounding_box_area /10000)
+    #     else:
+
+    #         ppm = 17  # Default ppm value
+    # else:
+    #     ppm = 20  # Default ppm value
+    # print(id1,bounding_box_area,ppm)
+    if location2[1]<200:
+        ppm = 9
+    elif location2[1]<267:
+        ppm = 11
     else:
-        ppm = 20  # Default ppm value
+        ppm = 30
     d_meters = d_pixels / ppm
     fps = initial_fps
     speed = d_meters * fps * 3.6
-    if speed>80:
-        speed = 60+((speed-80)*0.6)
+    # if speed>80:
+    #     speed = 60+((speed-80)*0.6)
     return speed
 
 def fancy_bbox(img,bbox,l=13,t=2):
@@ -87,7 +97,7 @@ def make_poly(img,spot):
     for i in range(len(spot)):
         output = cv2.fillPoly(img,[np.array(spot[i],np.int32)],zones_color[::-1])
         center_x, center_y = get_polygon_center(spot[i])
-        cv2.putText(output, f"Zone {i+1}", (int(center_x), int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+        cv2.putText(output, f"Zone{i+1}", (int(center_x)-10, int(center_y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
     cv2.addWeighted(overlay, alpha, output, 1 - alpha,
             0, output)
 
@@ -98,6 +108,8 @@ def create_coor_file(coor,path="./coors/coor.txt"):
 		textfile.write(str(element) + "\n")
 	textfile.close()
         
+
+
 def count_time_in_video_frame(ret,cap, prev_timestamp):
  
 
@@ -116,7 +128,7 @@ def write_copywright(frame):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.8
     font_thickness = 1
-    x,y = 8,10
+    x,y = 8,13
     transparent_box_alpha = 0.8
     overall_text = "Created by: Ahmed Raza Khanzada"
     color_design = (242, 172, 82)#(200, 200, 200)
@@ -134,7 +146,25 @@ def write_copywright(frame):
     
     cv2.putText(frame, overall_text, (x+5,y+text_size[1]), cv2.FONT_HERSHEY_PLAIN, font_scale, (0,0,0), 2)
     return frame    
+
+def draw_horizontal_line(image, height1, line_color = (0,0,255)  ):
+    # Get image dimensions
+    height, width, _ = image.shape
+    
+    # Draw a horizontal line on the image
+   
+    line_thickness = 2
+    cv2.line(image, (0, height1 ), (width, height1 ), line_color, line_thickness)
+
+    return image
+
+
 def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
+
+    # # # # # Call the function to draw the horizontal line on the image
+    # video_frame = draw_horizontal_line(video_frame, 267)
+    # video_frame = draw_horizontal_line(video_frame, 200, (255,255,0))
+
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.5
     font_color = (0, 0, 0)
