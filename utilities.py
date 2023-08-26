@@ -40,8 +40,10 @@ def estimateSpeed(initial_fps,location1, location2,id1):
     if len(location2)>2:
         bounding_box_area = location2[3]*location2[2]
         if bounding_box_area > 0:
-            ppm =  bounding_box_area /15000 # Adjust the factor50 as needed
-            print(f"ID {id1}","Car area", bounding_box_area, "PPM", ppm)
+            chage_in_y = abs(location2[1]>location1[1])
+            if chage_in_y:
+                ppm =  (bounding_box_area /10000)+chage_in_y # Adjust the factor50 as needed
+                # print(f"ID {id1}","Car area", bounding_box_area, "PPM", ppm)
         else:
             ppm = 17  # Default ppm value
     else:
@@ -49,8 +51,8 @@ def estimateSpeed(initial_fps,location1, location2,id1):
     d_meters = d_pixels / ppm
     fps = initial_fps
     speed = d_meters * fps * 3.6
-    if speed>100:
-        speed = 80+((speed-100)*0.6)
+    if speed>80:
+        speed = 60+((speed-80)*0.6)
     return speed
 
 def fancy_bbox(img,bbox,l=13,t=2):
@@ -114,7 +116,7 @@ def write_copywright(frame):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 0.8
     font_thickness = 1
-    x,y = 8,7
+    x,y = 8,10
     transparent_box_alpha = 0.8
     overall_text = "Created by: Ahmed Raza Khanzada"
     color_design = (242, 172, 82)#(200, 200, 200)
@@ -140,6 +142,7 @@ def display_zone_info(video_frame, zone_data,total_objects, x=20, y=50):
     box_line_spacing =25
     line_spacing = 30
     transparent_box_alpha = 0.5  # Adjust transparency here
+    y= y+7
     old_y = y
     color_design = (242, 172, 82)#(200, 200, 200)
     all_class_names = list(total_objects.values())
