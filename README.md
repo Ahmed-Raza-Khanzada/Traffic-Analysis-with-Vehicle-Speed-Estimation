@@ -47,6 +47,20 @@ Imagine deploying this project in sprawling metropolises. It becomes a game-chan
 
 Remember, every innovation comes with its set of challenges, and acknowledging them transparently is a testament to the project's authenticity and commitment to improvement. I will work on these challenges to improve it.</p>
         </div>
+    <div class="section">
+      <h2><strong>Getting Started</strong></h2>
+      <p>Experience the app's power with these steps:</p>
+      <ol>
+        <li><strong>Python 3.7 Installation:</strong> Ensure you have Python 3.7 or above version installed on your system.</li>
+        <li><strong>Create a Virtual Environment:</strong> Set up a virtual environment using:
+          <code>python -m venv &lt;environment_name&gt;<br>
+          source &lt;environment_name&gt;/bin/activate</code></li>
+        <li><strong>Install Dependencies:</strong> Equip the app with essential components using:
+          <code>pip install -r requirements.txt</code></li>
+        <li><strong>Launch the App:</strong> Dive into the future:
+          <code>python main.py --input_video <input video path> --output_video <output video path> --coor <Coordinates Path> --show True --weights <weights path></code></li>
+      </ol>
+    </div>
         <div class="section">
             <h2>Contact Us</h2>
             <p>If you have questions, ideas, or just want to learn more, feel free to reach out to <a href="mailto:khanzadaahmedraza@gmail.com">khanzadaahmedraza@gmail.com</a>.</p>
