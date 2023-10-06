@@ -58,7 +58,7 @@ Remember, every innovation comes with its set of challenges, and acknowledging t
         <li><strong>Install Dependencies:</strong> Equip the app with essential components using:
           <code>pip install -r requirements.txt</code></li>
         <li><strong>Launch the App:</strong> Dive into the future:
-          <code>python main.py --input_video <input video path> --output_video <output video path> --coor <Coordinates Path> --show True --weights <weights path></code></li>
+          <code>python main.py --input_video &lt;input video path&gt; --output_video &lt;output video path&gt; --coor &lt;Coordinates Path&gt; --show True --weights &lt;weights path&gt;</code></li>
       </ol>
     </div>
         <div class="section">
