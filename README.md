@@ -1,8 +1,17 @@
 # Traffic-Analysis-with-Vehicle-Speed-Estimation Yolo V7 and Deepsort
 
 
+<div class="container">
+    <h1><strong> Code in Action: Watch Demo  </strong></h1>
+    <div class="section">
+      <h2><strong>Video Demo</strong></h2>
+      <p>See the code in action by watching our video demo:</p>
+      <a href="https://github.com/Ahmed-Raza-Khanzada/Traffic-Analysis-with-Vehicle-Speed-Estimation/assets/50530895/d93591e6-9e6d-47dc-bf62-e3d6031a5240">
+        <img src="https://static.vecteezy.com/system/resources/previews/011/539/853/original/traffic-jam-icon-traffic-road-icon-symbol-free-vector.jpg" alt="Watch the Video Demo" width="40" height="30">
+           Watch Demo Video
+      </a>
+    </div>
 
-https://github.com/Ahmed-Raza-Khanzada/Traffic-Analysis-with-Vehicle-Speed-Estimation/assets/50530895/38ffc5d0-3fa4-4139-b566-9f964fa15da1
 
 
 <!DOCTYPE html>
